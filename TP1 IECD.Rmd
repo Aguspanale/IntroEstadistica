@@ -116,5 +116,53 @@ text(x = 10, y = 0.070, labels = "violeta: Gaussiana", col = "violet", adj = c(0
 
 Duplicando la ventana las densidades se parecen aún más restando todavía más importancia al nucleo elegido, exceptuando el rectangular, al cual se le observan algunos picos (osea que es más ruidoso).
 
+Ejercicio 4
 
+```{r}
+densidad_gaussiana_mujer <- density(datosBebes$Perim_cef[datosBebes$Sexo == "Mujer"], kernel = "gaussian")
+densidad_gaussiana_varon <- density(datosBebes$Perim_cef[datosBebes$Sexo == "Varon"], kernel = "gaussian")
+
+hist(datosBebes$Perim_cef, freq = F, xlim = c(25, 55), ylim = c(0, 0.13), 
+     xlab = "Perímetro Cefálico (cm)", ylab = "Densidad", main = "Gráfico Histograma / Densidad pErímetro cefálico")
+lines(density(datosBebes$Perim_cef, kernel = "gaussian"), col = 'green')
+lines(densidad_gaussiana_mujer, col = "pink")
+lines(densidad_gaussiana_varon, col = "blue")
+```
+Se puede observar que la curva de densidad de los varoness está más desplazada hacia la derecha que la de las mujeres .Esto nos dice que los varones tienden a tener un perímetro cefálico más grande en comparación con las mujeres en nuestra muestra de datos.
+
+Ejercicio 5 
+
+```{r}
+densidad_gaussiana_simple <- density(datosBebes$Perim_cef[datosBebes$Tipo_embarazo == "Simple"], kernel = "gaussian")
+densidad_gaussiana_multiple <- density(datosBebes$Perim_cef[datosBebes$Tipo_embarazo == "Multiple"], kernel = "gaussian")
+
+hist(datosBebes$Perim_cef, freq = F, xlim = c(25, 55), ylim = c(0, 0.13), 
+     xlab = "Perímetro Cefálico (cm)", ylab = "Densidad", main = "Gráfico Histograma / Densidad")
+lines(density(datosBebes$Perim_cef, kernel = 'gaussian'), col = 'green')
+lines(densidad_gaussiana_simple , col ="black")
+lines(densidad_gaussiana_multiple, col = "purple")
+```
+La curva más a la derecha para el tipo de embarazo simple sugiere que, en promedio, los bebés nacidos de embarazos simples tienen un perímetro cefálico mayor que los bebés nacidos de embarazos múltiples. La mayor altura de la curva para el tipo de embarazo simple indica una mayor densidad de bebés con un perímetro cefálico en comparación con los otros embarazos.
+La curva de densidad de embarazos simples es casi igual a la embarazos totales , esto debe ser  que la proporción de casos de embarazo simple es lo suficientemente grande como para que la distribución general se vea dominada por esta subpoblación.
+
+# chequeo 
+```{r}
+print(paste("Proporción de embarazos simples en la muestra",sum(datosBebes$Tipo_embarazo=="Simple")/nrow(datosBebes)))
+```
+El porcentaje de embarazos simples en la muestra es de 0.967 % . Creería que la alta proporción de embarazos simples explica el por qué las curvas de densidad para el tipo de embarazo simple y la de densidad global son casi idénticas.
+
+
+Ejercicio 6 
+
+```{r}
+library(aplpack)
+
+bagplot(datosBebes$Perim_cef, datosBebes$Talla,
+        ylim= c(30,140),xlab = "Perímetro Cefálico", ylab = "Talla", main = "Bagplot Perímetro cefálico vs Talla")
+```
+Los puntos que están fuera del polígono grande se consideran atípicos y representan valores inusuales en la relación entre las dos variables.
+Se interpreta que es muy poco común tener un perímetro cefálico muy pequeño y a la vez una talla cercana a su media .También nos dice que es inusual tener un perímetro cefalico muy grande y al mismo tiempo una talla muy grande
+
+¿Se registraron bebes de Talla alta y Perímetro Cefálico chico? No 
+¿Y de Talla baja y Perimetro Cefalico grande? Si
 
