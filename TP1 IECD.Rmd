@@ -1,0 +1,120 @@
+---
+title: "Tp_Inicial_IECD"
+output: html_document
+date: "2024-03-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+  
+
+```{r, ECHO = FALSE}
+datosBebes <- read.delim('ENNyS_menorA2.txt', sep = '', header = T)
+
+```
+
+Ejercicio 1
+
+```{r}
+hist(datosBebes$Perim_cef, freq = F,xlim = c(25, 55), ylim = c(0, 0.13),xlab = 'Perimetro Cefálico (cm)', ylab = 'Densidad', main = 'Histograma de densidad del perimetro cefálico, \n y curvas de densidad calculadas con distintos núcleos')
+lines(density(datosBebes$Perim_cef, kernel = 'rectangular'), col = 'red',)
+lines(density(datosBebes$Perim_cef, kernel = 'epanechnikov'), col = 'blue')
+lines(density(datosBebes$Perim_cef, kernel = 'gaussian'), col = 'violet')
+
+text(x = 10, y = 0.10, labels = "Curvas de densidad estimadas:",
+     col = "black", cex = 1, font = 2, adj = c(0,1))
+text(x = 10, y = 0.09, labels = "Rojo: Rectangular", col = "red", adj = c(0,1))
+text(x = 10, y = 0.080, labels = "azul: Epanechnikov", col = "blue", adj = c(0,1))
+text(x = 10, y = 0.070, labels = "violeta: Gaussiana", col = "violet", adj = c(0,1))
+
+``````
+Podemos observar que no cambia mucho el gráfico de densidad con el uso de distintos núcleos, por lo que quizás el ancho de bin sea el parámetro más importante (En este caso R lo está eligiendo automáticamente).
+
+Ejercicio 2
+
+a)Utilizando el histograma:
+
+Como está hecho utilizando la densidad, para calcular esta probabilidad hay que sumar la probabilidad de que los bebés caigan entre 42 y 45 cm, usando la densidad del bin donde se encuentran, y la de que caigan entre 45 y 48, también usando esa densidad.
+
+```{r}
+hist(datosBebes$Perim_cef, freq = F,xlim = c(25, 55), ylim = c(0, 0.13),xlab = 'Perimetro Cefálico (cm)', ylab = 'Densidad', main = 'Histograma de densidad del perimetro cefálico, \n y curvas de densidad calculadas con distintos núcleos',labels = T)
+abline(v=42, col = 'red')
+abline(v=48, col = 'red')
+grid(nx = NULL, ny = NULL,
+     lty = 2,      # Grid line type
+     col = "gray", # Grid line color
+     lwd = 2)      # Grid line width
+
+``````
+
+```{r}
+probabilidad = 3 * 0.065 + 3 * 0.11
+print(paste('Probabilidad calculada con histograma: ',probabilidad))
+```
+
+
+
+b) Utilizando la densidad:
+
+```{r}
+densidad <- density(datosBebes$Perim_cef, kernel = 'epanechnikov')
+```
+
+
+Analizando el contenido del objeto Densidad brindado por R, se trata de la función aproximada por 512 puntos en x (densidad['x']), y sus correspondientes 512 puntos en y (densidad['x']), podemos calcular entonces la probabilidad de un intervalo aproximando la integral convirtiendo la densidad en una función aproximada y integrandola.
+
+```{r}
+probabilidad = integrate(approxfun(densidad), lower=42, upper=48)['value']
+print(paste('Probabilidad calculada con densidad: ',probabilidad))
+
+```
+Podemos observar que los valores difieren en 0.05.
+
+Ejercicio 3
+
+```{r}
+densidadRectangular = density(datosBebes$Perim_cef, kernel = 'rectangular')
+densidadEpanechnikov = density(datosBebes$Perim_cef, kernel = 'epanechnikov')
+densidadGaussiana = density(datosBebes$Perim_cef, kernel = 'gaussian')
+
+print(paste('Ventana para rectangular: ',densidadRectangular['bw']))
+print(paste('Ventana para Epanechnikov: ',densidadEpanechnikov['bw']))
+print(paste('Ventana para gaussiana: ',densidadGaussiana['bw']))
+```
+Probemos como queda el grafico con la ventana a la mitad:
+
+```{r}
+hist(datosBebes$Perim_cef, freq = F,xlim = c(25, 55), ylim = c(0, 0.13),xlab = 'Perimetro Cefálico (cm)', ylab = 'Densidad', main = 'mismo grafico con la ventana a la mitad')
+lines(density(datosBebes$Perim_cef, kernel = 'rectangular',bw = 0.5841512545563/2), col = 'red',)
+lines(density(datosBebes$Perim_cef, kernel = 'epanechnikov',bw = 0.5841512545563/2), col = 'blue')
+lines(density(datosBebes$Perim_cef, kernel = 'gaussian',bw = 0.5841512545563/2), col = 'violet')
+
+text(x = 10, y = 0.10, labels = "Curvas de densidad estimadas:",
+     col = "black", cex = 1, font = 2, adj = c(0,1))
+text(x = 10, y = 0.09, labels = "Rojo: Rectangular", col = "red", adj = c(0,1))
+text(x = 10, y = 0.080, labels = "azul: Epanechnikov", col = "blue", adj = c(0,1))
+text(x = 10, y = 0.070, labels = "violeta: Gaussiana", col = "violet", adj = c(0,1))
+```
+y si la duplicamos?
+
+
+```{r}
+hist(datosBebes$Perim_cef, freq = F,xlim = c(25, 55), ylim = c(0, 0.13),xlab = 'Perimetro Cefálico (cm)', ylab = 'Densidad', main = 'mismo grafico con la ventana a la mitad')
+lines(density(datosBebes$Perim_cef, kernel = 'rectangular',bw = 0.5841512545563*2), col = 'red',)
+lines(density(datosBebes$Perim_cef, kernel = 'epanechnikov',bw = 0.5841512545563*2), col = 'blue')
+lines(density(datosBebes$Perim_cef, kernel = 'gaussian',bw = 0.5841512545563*2), col = 'violet')
+
+text(x = 10, y = 0.10, labels = "Curvas de densidad estimadas:",
+     col = "black", cex = 1, font = 2, adj = c(0,1))
+text(x = 10, y = 0.09, labels = "Rojo: Rectangular", col = "red", adj = c(0,1))
+text(x = 10, y = 0.080, labels = "azul: Epanechnikov", col = "blue", adj = c(0,1))
+text(x = 10, y = 0.070, labels = "violeta: Gaussiana", col = "violet", adj = c(0,1))
+```
+
+Duplicando la ventana las densidades se parecen aún más restando todavía más importancia al nucleo elegido, exceptuando el rectangular, al cual se le observan algunos picos (osea que es más ruidoso).
+
+
+
