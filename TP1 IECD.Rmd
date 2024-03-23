@@ -8,14 +8,10 @@ date: "2024-03-22"
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-
-  
-
 ```{r, ECHO = FALSE}
 datosBebes <- read.delim('ENNyS_menorA2.txt', sep = '', header = T)
 
 ```
-
 Ejercicio 1
 
 ```{r}
@@ -24,16 +20,20 @@ lines(density(datosBebes$Perim_cef, kernel = 'rectangular'), col = 'red',)
 lines(density(datosBebes$Perim_cef, kernel = 'epanechnikov'), col = 'blue')
 lines(density(datosBebes$Perim_cef, kernel = 'gaussian'), col = 'violet')
 
-text(x = 10, y = 0.10, labels = "Curvas de densidad estimadas:",
-     col = "black", cex = 1, font = 2, adj = c(0,1))
 text(x = 10, y = 0.09, labels = "Rojo: Rectangular", col = "red", adj = c(0,1))
 text(x = 10, y = 0.080, labels = "azul: Epanechnikov", col = "blue", adj = c(0,1))
 text(x = 10, y = 0.070, labels = "violeta: Gaussiana", col = "violet", adj = c(0,1))
 
 ``````
-Podemos observar que no cambia mucho el gráfico de densidad con el uso de distintos núcleos, por lo que quizás el ancho de bin sea el parámetro más importante (En este caso R lo está eligiendo automáticamente).
+Podemos observar que no cambia mucho el gráfico de densidad con el uso de distintos núcleos, por lo que quizás el ancho de la ventana sea el parámetro más importante (En este caso R lo está eligiendo automáticamente).
 
 Ejercicio 2
+
+```{r}
+bebés_en_rango <- sum(datosBebes$Perim_cef >= 42 & datosBebes$Perim_cef <= 48)
+probabilidad_estimada <- bebés_en_rango / nrow(datosBebes)
+print(paste("Probabilidad estimada :",probabilidad_estimada))
+``````
 
 a)Utilizando el histograma:
 
@@ -56,13 +56,11 @@ print(paste('Probabilidad calculada con histograma: ',probabilidad))
 ```
 
 
-
 b) Utilizando la densidad:
 
 ```{r}
 densidad <- density(datosBebes$Perim_cef, kernel = 'epanechnikov')
 ```
-
 
 Analizando el contenido del objeto Densidad brindado por R, se trata de la función aproximada por 512 puntos en x (densidad['x']), y sus correspondientes 512 puntos en y (densidad['x']), podemos calcular entonces la probabilidad de un intervalo aproximando la integral convirtiendo la densidad en una función aproximada y integrandola.
 
@@ -149,7 +147,7 @@ La curva de densidad de embarazos simples es casi igual a la embarazos totales ,
 ```{r}
 print(paste("Proporción de embarazos simples en la muestra",sum(datosBebes$Tipo_embarazo=="Simple")/nrow(datosBebes)))
 ```
-El porcentaje de embarazos simples en la muestra es de 0.967 % . Creería que la alta proporción de embarazos simples explica el por qué las curvas de densidad para el tipo de embarazo simple y la de densidad global son casi idénticas.
+El porcentaje de embarazos simples en la muestra es de 0.967 % .La alta proporción de embarazos simples explica el por qué las curvas de densidad para el tipo de embarazo simple y la de densidad global son casi idénticas.
 
 
 Ejercicio 6 
@@ -165,4 +163,35 @@ Se interpreta que es muy poco común tener un perímetro cefálico muy pequeño 
 
 ¿Se registraron bebes de Talla alta y Perímetro Cefálico chico? No 
 ¿Y de Talla baja y Perimetro Cefalico grande? Si
+
+Ejercicio 7 
+
+```{r}
+bagplot(datosBebes$Perim_cef, datosBebes$Talla, approx.limit = 100, 
+        xlab = "Perímetro Encefálico", ylab = "Talla", xlim = c(0, 50),
+        ylim= c(30,140), main = "Bagplot Perimetro cefálico vs Talla sin Datos atípicos",
+        show.outlier = F)
+```
+
+NO hay datos atipicos porque los saque daahhh !! ?? preguntar 
+
+Ejercicio 8
+
+library(dplyr)
+
+```{r}
+datos_mujeres <- filter(datosBebes, Sexo == "Mujer")
+datos_hombres <- filter(datosBebes, Sexo == "Varon")
+
+par(mfrow = c(1, 2))
+bagplot(datos_mujeres$Perim_cef, datos_mujeres$Talla,ylim=c(20,120),main="Datos mujeres")
+grid()
+bagplot(datos_hombres$Perim_cef, datos_hombres$Talla,ylim=c(20,120),main="Datos varones")
+grid()
+```
+Podemos ver una ligera diferencia entre las relaciones entre perimetro cefalico y talle segun sexo.
+
+
+
+
 
