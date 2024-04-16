@@ -1,0 +1,46 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+datos <- scan("buffalo.txt")  
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+#Ventana de silverman
+
+s <- sd(datos)
+IQR <- IQR(datos)
+n <- length(datos)
+
+Hsiv <- 1.06 * min(s, IQR/1.349)/(n^(1/5))
+```
+
+```{r}
+plot(density(datos, kernel = 'rectangular', window = Hsiv), col = 'red',)
+```
+
+```{r}
+# cross validation
+#encontremos una f(xi) i dada una h
+hToTest <- 10
+excluded <- 1
+currentSum <- 0
+for (i in 1:n-1) {
+  if (i != excluded){
+    currentSum <- abs((datos[i] - datos[excluded])/hToTest) < hToTest 
+  }  
+}
+```
+
