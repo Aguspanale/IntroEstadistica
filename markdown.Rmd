@@ -1,0 +1,111 @@
+---
+title: "La_Dibunetta"
+author: "Jalil_Pañale_Yudcovsky"
+date: "2024-07-06"
+output: pdf_document
+---
+
+PUNTO A
+
+```{r}
+
+setwd("~/Estadística/TP_final")
+library(ggplot2)
+
+datos <- read.csv("individuals.csv", sep = ";")
+mujeres <- subset(datos, SEX == 2)
+
+mujeres <- subset(mujeres, HIP.CIRCUMFERENCE != 0 & BUTTOCK.KNEE.LENGTH != 0)
+
+plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, main = "Diagrama de dispersión de \n Circunferencia de la cadera vs longitud del fémur",
+     xlab = "Circunferencia de la cadera (mm)", ylab = "Longitud del fémur (mm)", col = "purple")
+```
+Podemos observar una clara relación creciente entre las variables. No hay outliers y los datos parecen bien cargados.
+
+\n \n
+PUNTO B
+
+```{r}
+
+mujeres_ordenado <- mujeres[order(mujeres$AGE.IN.MONTHS), ]
+grupo_etario_1  <- mujeres_ordenado[1:466, ]
+grupo_etario_2 <-  mujeres_ordenado[467:932, ]
+grupo_etario_3 <-  mujeres_ordenado[933:1399, ]
+grupo_etario_4<-  mujeres_ordenado[1400:1866, ]
+
+grupos <- list(grupo_etario_1, grupo_etario_2, grupo_etario_3, grupo_etario_4)
+
+medianas <- numeric(length(grupos))
+for (i in 1:length(grupos)) {
+  medianas[i] <- median(grupos[[i]]$HIP.CIRCUMFERENCE)
+}
+
+for (i in 1:4) {
+  cat("Mediana grupo", i, ":" ,medianas[i], "\n")
+}
+```
+
+Tenemos 1866 datos y lo dividimos en 4 partes iguales. Podmeos observar que los grupos están en orden creciente de edad, y las medianas que obtuvimos también fueron valores crecientes (mientras más edad, más hip circumference.)
+
+```{r}
+
+estimar_se_mediana <- function(datos, B = 1000) {
+  theta_boot <- numeric(B)
+  for (i in 1:B) {
+    n <- length(datos)
+    datos_boot <- sample(datos, n, replace = TRUE)
+    theta_boot[i] <- median(datos_boot)
+  }
+
+  se_boot <- sqrt(mean((theta_boot - mean(theta_boot))^2))  # Desviación estándar de las medianas bootstrap
+  return(se_boot)
+}
+
+intervalos_bootstrap <- list()
+for (i in (1:4)){
+  se_boot <- estimar_se_mediana(grupos[[i]]$HIP.CIRCUMFERENCE)
+  intervalo_boot <- c(medianas[i] - 1.96 * se_boot , medianas[i] + 1.96 * se_boot)
+  intervalos_bootstrap[[i]] <- intervalo_boot
+}
+
+for (i in 1:4) {
+  cat("Intervalo de confianza bootstrap para grupo", i, ": [", round(intervalos_bootstrap[[i]][1], 2), ", ", round(intervalos_bootstrap[[i]][2], 2), "]\n")
+}
+```
+```{r}
+
+estadisticas$label_pos <- estadisticas$IC_upper + 10  # Posición de la etiqueta para las barras de error
+
+ggplot() +
+  geom_point(data = grupo_etario_1, aes(x = HIP.CIRCUMFERENCE, y = rep("Grupo 1", nrow(grupo_etario_1))), color = "gray", size = 2, alpha = 0.5) +
+  geom_point(data = grupo_etario_2, aes(x = HIP.CIRCUMFERENCE, y = rep("Grupo 2", nrow(grupo_etario_2))), color = "gray", size = 2, alpha = 0.5) +
+  geom_point(data = grupo_etario_3, aes(x = HIP.CIRCUMFERENCE, y = rep("Grupo 3", nrow(grupo_etario_3))), color = "gray", size = 2, alpha = 0.5) +
+  geom_point(data = grupo_etario_4, aes(x = HIP.CIRCUMFERENCE, y = rep("Grupo 4", nrow(grupo_etario_4))), color = "gray", size = 2, alpha = 0.5) +
+  geom_point(data = estadisticas, aes(x = Mediana, y = Grupo), color = "darkorange", size = 2) +
+  geom_errorbarh(data = estadisticas, aes(xmin = IC_lower, xmax = IC_upper, y = Grupo), height = 0.4, color = "darkblue", lwd = 1) +
+  labs(title = "Datos de circunferencia de cadera con mediana e intervalo de confianza por grupo etario",
+       x = "Circunferencia de la cadera (mm)",
+       y = "Grupo etario") +
+  theme_minimal()
+
+```
+//EXPLICACIÓN DE CÓMO PENSAMOS LA FUNCIÓN DEL INTERVALO (EXPLICACIÓN TEO 12)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
