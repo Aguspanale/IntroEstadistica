@@ -92,8 +92,196 @@ ggplot() +
 //EXPLICACIÓN DE CÓMO PENSAMOS LA FUNCIÓN DEL INTERVALO (EXPLICACIÓN TEO 12)
 
 
+c) i)
+```{r}
+
+ajuste_bw_100 <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = 100)
+ajuste_bw_50 <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = 50)
+
+plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, 
+     main = "Diagrama de dispersión de \n Circunferencia de la cadera vs longitud del fémur",
+     xlab = "Circunferencia de la cadera (mm)", 
+     ylab = "Longitud del fémur (mm)", 
+     col = "purple")
+
+lines(ajuste_bw_100$x, ajuste_bw_100$y, col = "blue", lwd = 2)
+lines(ajuste_bw_50$x, ajuste_bw_50$y, col = "red", lwd = 2)
+legend("topleft",legend = c("Bw = 100","Bw= 50"), col = c("blue","red"),lwd = 2)
+```
+
+¿Que sugiere el grafico obtenido? ¿Cual de las dos ventanas usarıa?
+
+El grafico obtenido sugiere que ambos ajustes parecen seguir bastante bien a los datos relacionados. 
+Siempre las ventanas mas chicas , en los sectores donde hay menor cantidad de datos, son mas sesgados por los datos , por lo que se pegan a cada punto , en cambio las ventanas mas grandes no siguen con esta dinamica, Por lo que podemos observar que en los extremos , la linea de Bw = 50 se ajusta mejor a los datos ya que en estas zonas escasean . 
+
+Usariamos la ventana de 50 porque se ajusta mejor a los datos en las colas. Mientra que en el centro ambas se comportan casi de la misma manera.XD
 
 
+ii)
+
+```{r}
+
+y = mujeres$BUTTOCK.KNEE.LENGTH
+x = mujeres$HIP.CIRCUMFERENCE
+
+ventanas <- seq(20, 50, by = 1)
+
+cv_errors <- rep(0, length(ventanas))
+
+for (j in seq_along(ventanas)) {
+  h <- ventanas[j]
+  cv_error <- 0
+  for (i in 1:length(y)) {
+    xi <- x[-i]
+    yi <- y[-i]
+    m_estimado <- ksmooth(xi, yi, kernel = "normal", bandwidth = h, x.points = x[i])
+    cv_error <- cv_error + (y[i] - m_estimado$y)^2
+    cv_errors[j] <- cv_error/length(y)
+    }
+  cv_errors[j] <- cv_error/length(y)
+
+}
+h_optimo <- ventanas[which.min(cv_errors)]
+print(h_optimo)
+
+```
+iii)
+
+```{r}
+
+#parte de cross validation
+
+nwsmooth<- function(h, x, y) {
+  cv <- rep(0, length(y))
+  for (i in 1:length(y)) {
+    xi <- x[-i]
+    yi <- y[-i]
+    m_estimado <- ksmooth(xi, yi, kernel = "normal", bandwidth = h, x.points = x[i])
+    cv[i] <- (y[i] - m_estimado$y)^2
+  }
+  return(mean(cv))
+}
+
+
+h_optimos <- seq(20, 50, by = 1)
+
+valores_del_error_h_optimo <- sapply(h_optimos, nwsmooth, x = mujeres$HIP.CIRCUMFERENCE, y = mujeres$BUTTOCK.KNEE.LENGTH)
+h_optimo <- h_optimos[which.min(valores_del_error_h_optimo)]
+
+plot(h_optimos, valores_del_error_h_optimo, type = "l", col = "blue", lwd = 2,
+     xlab = "h (Ancho de banda)", 
+     ylab = "CV(h)", 
+     main = "Validación cruzada para seleccionar h óptimo")
+
+abline(v = h_optimo, col = "red", lty = 2)
+print(paste("La ventana óptima es:", h_optimo))
+
+```
+Podemos asumir que la función de las ventanas que graficamos es unimodal bajo alguna condición de regularidad, por lo que si queremos encontrar un h mínimo en cierta grilla, si nos da o bien el valor más chico o bien el valor más grande, podría pasar que el óptimo esté por fuera de la grilla, pero al estar el óptimo al medio de la grilla, por def va a ser óptimo global, por lo que no tenemos que extender la grilla pues no estamos perdiendo ningún valor de h menor.
+
+
+iv)
+
+Primero realizamos el modelo con todos los datos , sin separar en conjunto de entrenamiento y conjunto de prueba . 
+
+```{r}
+ajuste_bw_optimo <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = h_optimo)
+
+ajuste_lm <- lm(BUTTOCK.KNEE.LENGTH ~ HIP.CIRCUMFERENCE, data = mujeres)
+
+plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH,
+     main = "Diagrama de dispersión de \n Circunferencia de la cadera vs longitud del fémur",
+     xlab = "Circunferencia de la cadera (mm)", 
+     ylab = "Longitud del fémur (mm)", 
+     col = "purple")
+
+lines(ajuste_bw_optimo$x, ajuste_bw_optimo$y, col = "blue", lwd = 2)
+abline(ajuste_lm, col = "green", lwd = 2)
+legend("bottomright",legend = c("Curva con Ventana optima","Curva de minimos cuadrados"), col = c("blue","green"),lwd = 2)
+
+```
+Claramente nos quedamos con la curva de nwsmooth ya que se puede observar que aproxima mucho mejor los datos . 
+
+
+
+
+Ahora dividimos los datos en dos conjuntos: uno para entrenar el modelo (conjunto de entrenamiento) y otro para evaluar su rendimiento (conjunto de prueba).
+
+```{r}
+train_indices <- sample(seq_len(nrow(mujeres)), size = 0.8 * nrow(mujeres))
+
+train_data <- mujeres[train_indices, ]
+test_data <- mujeres[-train_indices, ]
+
+```
+
+
+Ahora creamos el modelo de regresión lineal y calculamos el error cuadrático medio en los datos de prueba .
+
+```{r}
+
+ajuste_bw_optimo <- ksmooth(train_data$HIP.CIRCUMFERENCE, train_data$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = h_optimo)
+
+modelo <- lm( BUTTOCK.KNEE.LENGTH ~ HIP.CIRCUMFERENCE, data = train_data)
+
+predicciones <- predict(modelo, newdata = test_data)
+
+plot(test_data$HIP.CIRCUMFERENCE, test_data$BUTTOCK.KNEE.LENGTH,
+     main = "Diagrama de dispersión de \n Circunferencia de la cadera vs longitud del fémur",
+     xlab = "Circunferencia de la cadera (mm)", 
+     ylab = "Longitud del fémur (mm)", 
+     col = "purple")
+
+lines(ajuste_bw_optimo$x, ajuste_bw_optimo$y, col = "blue", lwd = 2)
+abline(modelo, col = "green", lwd = 2)
+legend("bottomright",legend = c("Curva con Ventana optima","Curva de minimos cuadrados"), col = c("blue","green"),lwd = 2)
+
+
+
+```
+DAFNE ES UNA TROLA 
+
+PUNTO D 
+
+Esta función calculará el estimador lineal local utilizando el método de mínimos cuadrados ponderados por un núcleo normal.
+Utilizaremos la fórmula matricial mencionada en el texto para encontrar el intercepto y  la pendient,  que minimizan la suma ponderada de los residuos cuadrados.
+
+En el contexto de la regresión local (como Nadaraya-Watson o regresión local lineal), se utilizan pesos basados en un núcleo (kernel) que asigna mayor peso a las observaciones cercanas al punto donde se realiza la estimación y menor peso a las observaciones más lejanas. Esto ayuda a que las observaciones más cercanas tengan una influencia mayor en la estimación local.
+
+```{r}
+
+# Definir la función linearsmooth
+
+linearsmooth <- function(x, y, h, x0) {
+    n <- length(x)
+    K <- dnorm((x0 - x) / h)  # Kernel normal en el punto x0
+    X <- cbind(1, x - x[1])
+    weights <- diag(K)
+    coef <- solve(t(X) %*% weights %*% X) %*% t(X) %*% weights %*% y
+    return(coef)
+}
+
+# Coeficientes del estimador lineal local
+# USAMOS LA HOPTIMA CALCULADA ANTERIORMENTE 
+
+coeficientes <- linearsmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, 41, mujeres$HIP.CIRCUMFERENCE)
+ordenada <- coeficientes[1]
+pendiente <- coeficientes[2]
+
+# Graficar el diagrama de dispersión
+
+ordenada <- 321.1275109
+pendiente <- 0.8337998
+
+plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH,
+     main = "Diagrama de dispersión de \n Circunferencia de la cadera vs longitud del fémur",
+     xlab = "Circunferencia de la cadera (mm)", 
+     ylab = "Longitud del fémur (mm)", 
+     col = "purple")
+abline(321, 2, col = "blue", lwd = 2)
+legend("topleft", legend = "Recta ajustada", col = "blue", lwd = 2)
+
+```
 
 
 
