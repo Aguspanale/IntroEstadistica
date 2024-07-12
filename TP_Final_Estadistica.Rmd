@@ -4,8 +4,212 @@ author: "Jalil_Pañale_Yudcovsky"
 date: "2024-07-06"
 output: pdf_document
 ---
-PUNTO A
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1)-a
+
+Consideremos el estimador de Nadaraya–Watson dado por:
+
+\[
+\hat{m}_h(x) = \frac{\sum_{i=1}^n Y_i K\left(\frac{X_i - x}{h}\right)}{\sum_{\ell=1}^n K\left(\frac{X_\ell - x}{h}\right)} = \sum_{i=1}^n Y_i w_{i,h}(x),
+\]
+
+donde
+
+\[
+w_{i,h}(x) = \frac{K\left(\frac{X_i - x}{h}\right)}{\sum_{\ell=1}^n K\left(\frac{X_\ell - x}{h}\right)}.
+\]
+
+Para los valores predichos \(\hat{Y}_i = \hat{m}_h(X_i)\), tenemos
+
+\[
+\hat{Y}_i = \sum_{j=1}^n Y_j w_{j,h}(X_i),
+\]
+
+donde
+
+\[
+w_{j,h}(X_i) = \frac{K\left(\frac{X_j - X_i}{h}\right)}{\sum_{\ell=1}^n K\left(\frac{X_\ell - X_i}{h}\right)}.
+\]
+
+Podemos escribir esto en forma matricial. Sea \(Y = (Y_1, Y_2, \ldots, Y_n)^T\) el vector de respuestas y \(\hat{Y} = (\hat{Y}_1, \hat{Y}_2, \ldots, \hat{Y}_n)^T\) el vector de valores predichos. Entonces,
+
+\[
+\hat{Y}_i = \sum_{j=1}^n S_{ij} Y_j,
+\]
+
+donde \(S_{ij} = w_{j,h}(X_i)\).
+
+Para escribirlo en forma matricial, definimos la matriz \(S\) como una matriz \(n \times n\) con elementos \(S_{ij}\) dados por
+
+\[
+S_{ij} = w_{j,h}(X_i) = \frac{K\left(\frac{X_j - X_i}{h}\right)}{\sum_{\ell=1}^n K\left(\frac{X_\ell - X_i}{h}\right)}.
+\]
+
+Entonces, tenemos
+
+\[
+\hat{Y} = SY,
+\]
+
+donde \(S\) es la matriz de pesos \(S_{ij} = w_{j,h}(X_i)\).
+
+Esta matriz \(S\) captura cómo los valores de \(Y\) se transforman linealmente para obtener los valores predichos \(\hat{Y}\) usando el estimador de Nadaraya–Watson.
+
+
+
+
+### 1)-b
+
+
+Consideremos el estimador de Nadaraya-Watson dado por:
+
+\[
+\hat{m}_h(x) = \frac{\sum_{i=1}^n Y_i K\left( \frac{X_i - x}{h} \right)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - x}{h} \right)} = \sum_{i=1}^n Y_i w_{i,h}(x),
+\]
+
+donde
+
+\[
+w_{i,h}(x) = \frac{K\left( \frac{X_i - x}{h} \right)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - x}{h} \right)}.
+\]
+
+Para el estimador \(\hat{m}^{-i}_h(X_i)\), debemos calcular el estimador sin la observación \((X_i, Y_i)\):
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\sum_{\substack{j=1 \\ j \neq i}}^n Y_j K\left( \frac{X_j - X_i}{h} \right)}{\sum_{\substack{\ell=1 \\ \ell \neq i}}^n K\left( \frac{X_\ell - X_i}{h} \right)}.
+\]
+
+Podemos escribir esto como:
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\sum_{j=1}^n Y_j K\left( \frac{X_j - X_i}{h} \right) - Y_i K\left( \frac{X_i - X_i}{h} \right)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - K\left( \frac{X_i - X_i}{h} \right)}.
+\]
+
+simplificando,
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\sum_{j=1}^n Y_j K\left( \frac{X_j - X_i}{h} \right) - Y_i K(0)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - K(0)}.
+\]
+
+Ahora, utilizando la definición de \(\hat{m}_h(X_i)\), tenemos:
+
+\[
+\hat{m}_h(X_i) = \frac{\sum_{j=1}^n Y_j K\left( \frac{X_j - X_i}{h} \right)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right)}.
+\]
+
+De aquí, se puede observar que:
+
+\[
+\sum_{j=1}^n Y_j K\left( \frac{X_j - X_i}{h} \right) = \hat{m}_h(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right).
+\]
+
+Sustituyendo esta relación en la expresión de \(\hat{m}^{-i}_h(X_i)\), obtenemos:
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\hat{m}_h(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - Y_i K(0)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - K(0)}.
+\]
+
+Para simplificar, factorizamos el denominador y el numerador por \(\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right)\):
+
+Denominador:
+
+\[
+\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - K(0) = \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) \left(1 - \frac{K(0)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right)}\right).
+\]
+
+Numerador:
+
+\[
+\hat{m}_h(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - Y_i K(0) = \hat{m}_h(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - Y_i \frac{K(0) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right)}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right)}.
+\]
+
+\[
+= \hat{m}_h(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) - Y_i w_{i,h}(X_i) \sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right).
+\]
+
+Entonces, podemos simplificar la fracción:
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) (\hat{m}_h(X_i) - Y_i w_{i,h}(X_i))}{\sum_{\ell=1}^n K\left( \frac{X_\ell - X_i}{h} \right) \left(1 - w_{i,h}(X_i)\right)}.
+\]
+
+\[
+= \frac{\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}.
+\]
+
+Esto prueba la igualdad \((2)\):
+
+\[
+\hat{m}^{-i}_h(X_i) = \frac{\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}.
+\]
+
+### Prueba de la igualdad \((3)\):
+
+Usando la igualdad \((2)\), tenemos:
+
+\[
+Y_i - \hat{m}^{-i}_h(X_i) = Y_i - \left( \frac{\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)} \right).
+\]
+
+Simplificando, obtenemos:
+
+\[
+Y_i - \hat{m}^{-i}_h(X_i) = Y_i - \frac{\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}.
+\]
+
+Multiplicando ambos lados por \(1 - w_{i,h}(X_i)\), tenemos:
+
+\[
+(Y_i - \hat{m}^{-i}_h(X_i))(1 - w_{i,h}(X_i)) = Y_i (1 - w_{i,h}(X_i)) - (\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)).
+\]
+
+\[
+= Y_i - Y_i w_{i,h}(X_i) - \hat{m}_h(X_i) + Y_i w_{i,h}(X_i).
+\]
+
+\[
+= Y_i - \hat{m}_h(X_i).
+\]
+
+Por lo tanto,
+
+\[
+Y_i - \hat{m}^{-i}_h(X_i) = \frac{Y_i - \hat{m}_h(X_i)}{1 - w_{i,h}(X_i)}.
+\]
+
+Elevando al cuadrado ambos lados,
+
+\[
+(Y_i - \hat{m}^{-i}_h(X_i))^2 = \left( \frac{Y_i - \hat{m}_h(X_i)}{1 - w_{i,h}(X_i)} \right)^2 = \frac{(Y_i - \hat{m}_h(X_i))^2}{(1 - w_{i,h}(X_i))^2}.
+\]
+
+Finalmente, la función objetivo de validación cruzada se puede escribir como:
+
+\[
+CV(h) = \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{m}^{-i}_h(X_i))^2 = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i - \hat{m}_h(X_i))^2}{(1 - w_{i,h}(X_i))^2}.
+\]
+
+Esto prueba la igualdad \((3)\):
+
+\[
+CV(h) = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i - \hat{m}_h(X_i))^2}{(1 - w_{i,h}(X_i))^2}.
+\]
+
+### Conclusión
+
+Demostramos que:
+
+1. \(\hat{m}^{-i}_h(X_i) = \frac{\hat{m}_h(X_i) - Y_i w_{i,h}(X_i)}{1 - w_{i,h}(X_i)}\)
+2. \(CV(h) = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i - \hat{m}_h(X_i))^2}{(1 - w_{i,h}(X_i))^2}\)
+
+Esto muestra cómo simplificar el cálculo de la función objetivo de validación cruzada sin necesidad de recalcular el estimador para cada observación.
+
+
+### 2)-a
 
 ```{r}
 library(ggplot2)
@@ -16,8 +220,9 @@ plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, main = "Diagrama de
      xlab = "Circunferencia de la cadera (mm)", ylab = "Longitud del fémur (mm)", col = "purple")
 ```
 Podemos observar una clara relación creciente entre las variables. Por la curvatura observada, en principio, parecería que no es simplemente una relación lineal. Además, no parece haber datos atípicos.
-\n \n
-PUNTO B
+
+### 2)-b
+
 ```{r}
 mujeres_ordenado <- mujeres[order(mujeres$AGE.IN.MONTHS), ]
 grupo_etario_1  <- mujeres_ordenado[1:466, ]
@@ -89,8 +294,8 @@ ggplot() +
 ```
 
 
+### 2)-c i
 
-c) i)
 ```{r}
 ajuste_bw_100 <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = 100)
 ajuste_bw_50 <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = 50)
@@ -116,7 +321,7 @@ Por otro lado, en el extremo derecho sucede lo contrario, los datos se van desva
 
 si tuvieramos que elegir un estimador ideal para este caso, sería uno que estime con ventana chica por izquierda, que hay menos variabilidad, y por derecha con el de ventana grande. Igualmente, por cuestiones de simplicidad y que hay que elegir uno, decidimos que el de ventana más chica va a ser confiable mientras no estimemos en valores muy extremos.
 
-ii)
+### 2)-c ii
 
 ```{r}
 f_obj<- function(h, x, y) {
@@ -141,7 +346,9 @@ abline(v = h_optimo, col = "red", lty = 2)
 podemos ver que la ventana óptima da 41
 
 
-iii) implementemos nwsmooth y una función para calcular el ECM para cada ventana usando cross validation
+### 2)-c iii 
+
+implementemos nwsmooth y una función para calcular el ECM para cada ventana usando cross validation
 
 ```{r}
 nwsmooth <- function(punto, datos_x, datos_y, ancho_banda) {
@@ -240,7 +447,7 @@ lines(grilla, y_smooth, col="red", lwd=2)
 
 
 
-iv)
+### 2)-c iv
 
 ```{r}
 ajuste_bw_optimo <- ksmooth(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH, kernel = "normal", bandwidth = h_optimo)
@@ -259,7 +466,7 @@ legend("bottomright",legend = c("Curva de ksmooth con Ventana óptima","curva de
 Podemos observar que las curvas de ksmooth y nwsmooth dan iguales, por lo que pareciera que implementamos nuestra propia versión de ksmooth 
 
 
-PUNTO D 
+### 2)-d i/ii
 
 Esta función calculará el estimador lineal local utilizando el método de mínimos cuadrados ponderados por un núcleo normal.
 Utilizaremos la fórmula matricial mencionada en el texto para encontrar el intercepto y  la pendient,  que minimizan la suma ponderada de los residuos cuadrados.
@@ -287,7 +494,7 @@ valores_lsmooth <- sapply(grilla, function(x0) linearsmooth(x0, mujeres$HIP.CIRC
 
 
 ```
-
+### 2)-d iii
 
 ```{r}
 plot(mujeres$HIP.CIRCUMFERENCE, mujeres$BUTTOCK.KNEE.LENGTH,
